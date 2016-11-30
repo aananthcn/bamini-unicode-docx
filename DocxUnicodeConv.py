@@ -31,6 +31,7 @@ def convert_bamini(paragraph):
     for key in bamini_dict.keys():
         text = text.replace(str(key), str(bamini_dict.get(key)))
     print "CONVERTED (Bamini)!!"
+    print text
     return text.decode("utf-8")    
 
 def convert_adhawintamil(paragraph):
@@ -38,6 +39,7 @@ def convert_adhawintamil(paragraph):
     for key in adhawintamil_dict.keys():
         text = text.replace(str(key), str(adhawintamil_dict.get(key)))
     print "CONVERTED (Adhawin-Tamil)!!"
+    print text
     return text.decode("utf-8")    
 
 def main():
