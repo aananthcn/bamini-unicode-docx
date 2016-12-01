@@ -23,28 +23,28 @@ def usage():
     print "usage: ./Bamini2UniConv -i <input file>"
     print ""
 
-def print_run(run):
-    print "font = "+str(run.font.name)
-    print "text = "+run.text
+def print_run(wg):
+    print "font = "+str(wg.font.name)
+    print "text = "+wg.text
 
-def convert_amudham(paragraph):
-    text = paragraph.encode("utf-8")
+def convert_amudham(wg):
+    text = wg.encode("utf-8")
     for key in amudham_dict.keys():
         text = text.replace(str(key), str(amudham_dict.get(key)))
     print "CONVERTED (Amudham)!!"
     print text
     return text.decode("utf-8")
 
-def convert_bamini(paragraph):
-    text = paragraph.encode("utf-8")
+def convert_bamini(wg):
+    text = wg.encode("utf-8")
     for key in bamini_dict.keys():
         text = text.replace(str(key), str(bamini_dict.get(key)))
     print "CONVERTED (Bamini)!!"
     print text
     return text.decode("utf-8")
 
-def convert_adhawintamil(paragraph):
-    text = paragraph.encode("utf-8")
+def convert_adhawintamil(wg):
+    text = wg.encode("utf-8")
     for key in adhawintamil_dict.keys():
         text = text.replace(str(key), str(adhawintamil_dict.get(key)))
     print "CONVERTED (Adhawin-Tamil)!!"
@@ -80,8 +80,12 @@ def main():
 
     document = Document(infile)
     for p in document.paragraphs:
+        print "\n<para>"
+        prev_font = "Init"
+        para = ""
         for run in p.runs:
             print "\n<run>"
+            curr_font = run.font.name
             if isinstance(run.font.name, basestring):
                 if run.font.name in english_fonts:
                     print_run(run)
@@ -93,13 +97,17 @@ def main():
                     run.text = convert_adhawintamil(run.text);
                 else:
                     print_run(run)
+                    curr_font = "Bamini"
                     run.text = convert_bamini(run.text)
             elif run.font.name == None and run.style.name == "Default Paragraph Font":
                 print_run(run)
+                curr_font = "Bamini"
                 run.text = convert_bamini(run.text)
             else:
                 print_run(run)
+            prev_font = curr_font
             print "</run>"
+        print "</para>"
             
             
     document.save(infile+"-modified.docx")
