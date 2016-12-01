@@ -10,6 +10,7 @@ import zipfile
 
 from docx import Document
 from BaminiDict import bamini_dict
+from AmudhamDict import amudham_dict
 from AdhawinTamilDict import adhawintamil_dict 
 
 english_fonts = ["Times New Roman"]
@@ -26,13 +27,21 @@ def print_run(run):
     print "font = "+str(run.font.name)
     print "text = "+run.text
 
+def convert_amudham(paragraph):
+    text = paragraph.encode("utf-8")
+    for key in amudham_dict.keys():
+        text = text.replace(str(key), str(amudham_dict.get(key)))
+    print "CONVERTED (Amudham)!!"
+    print text
+    return text.decode("utf-8")
+
 def convert_bamini(paragraph):
     text = paragraph.encode("utf-8")
     for key in bamini_dict.keys():
         text = text.replace(str(key), str(bamini_dict.get(key)))
     print "CONVERTED (Bamini)!!"
     print text
-    return text.decode("utf-8")    
+    return text.decode("utf-8")
 
 def convert_adhawintamil(paragraph):
     text = paragraph.encode("utf-8")
@@ -40,7 +49,7 @@ def convert_adhawintamil(paragraph):
         text = text.replace(str(key), str(adhawintamil_dict.get(key)))
     print "CONVERTED (Adhawin-Tamil)!!"
     print text
-    return text.decode("utf-8")    
+    return text.decode("utf-8")
 
 def main():
     try:
@@ -76,6 +85,9 @@ def main():
             if isinstance(run.font.name, basestring):
                 if run.font.name in english_fonts:
                     print_run(run)
+                elif run.font.name == "Amudham":
+                    print_run(run)
+                    run.text = convert_amudham(run.text);
                 elif run.font.name == "Adhawin-Tamil":
                     print_run(run)
                     run.text = convert_adhawintamil(run.text);
