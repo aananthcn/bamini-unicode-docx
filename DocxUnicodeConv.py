@@ -23,33 +23,51 @@ def usage():
     print "usage: ./Bamini2UniConv -i <input file>"
     print ""
 
-def print_run(wg):
-    print "font = "+str(wg.font.name)
-    print "text = "+wg.text
+def print_run(run):
+    print "font = "+str(run.font.name)
+    print "style.font = "+str(run.style.font.name)
+    print "text = "+run.text
 
 def convert_amudham(wg):
     text = wg.encode("utf-8")
     for key in amudham_dict.keys():
         text = text.replace(str(key), str(amudham_dict.get(key)))
-    print "CONVERTED (Amudham)!!"
-    print text
+    print "Amudham: "+text
     return text.decode("utf-8")
 
 def convert_bamini(wg):
     text = wg.encode("utf-8")
     for key in bamini_dict.keys():
         text = text.replace(str(key), str(bamini_dict.get(key)))
-    print "CONVERTED (Bamini)!!"
-    print text
+    print "Bamini: "+text
     return text.decode("utf-8")
 
 def convert_adhawintamil(wg):
     text = wg.encode("utf-8")
     for key in adhawintamil_dict.keys():
         text = text.replace(str(key), str(adhawintamil_dict.get(key)))
-    print "CONVERTED (Adhawin-Tamil)!!"
-    print text
+    print "Adhawin-Tamil: "+text
     return text.decode("utf-8")
+
+
+# arg1: run object , arg2: paragraph font
+def convert_runfont(run, p_font):
+
+    r_font = run.font.name
+    print_run(run)
+
+    if r_font == "Amudham" or (r_font == None and p_font == "Amudham"):
+        run.text = convert_amudham(run.text)
+    elif r_font == "Adhawin-Tamil" or (r_font == None and p_font == "Adhawin-Tamil"):
+        run.text = convert_adhawintamil(run.text)
+    elif r_font == "Bamini" or (r_font == None and p_font == "Bamini"):
+        run.text = convert_bamini(run.text)
+    elif r_font in english_fonts:
+        print "No conversion for "+str(r_font)
+    else:
+        print "UNKOWN FONT"
+        run.text = convert_bamini(run.text)
+
 
 def main():
     try:
@@ -80,32 +98,49 @@ def main():
 
     document = Document(infile)
     for p in document.paragraphs:
+        # Collect paragraph information
         print "\n<para>"
-        prev_font = "Init"
-        para = ""
-        for run in p.runs:
+        paragraph_font = str(p.style.font.name)
+        print "paragraph font: "+paragraph_font
+        print "paragraph text: "+p.text
+
+        # Collect run information in this paragraph
+        runs = [r for r in p.runs]
+        runs_len = len(runs)
+        print runs_len
+
+        # if no runs, skip conversion
+        if runs_len == 0:
+            print "</para>"
+            continue
+
+        # Convert single-run paragragh
+        if runs_len == 1:
             print "\n<run>"
-            curr_font = run.font.name
-            if isinstance(run.font.name, basestring):
-                if run.font.name in english_fonts:
-                    print_run(run)
-                elif run.font.name == "Amudham":
-                    print_run(run)
-                    run.text = convert_amudham(run.text);
-                elif run.font.name == "Adhawin-Tamil":
-                    print_run(run)
-                    run.text = convert_adhawintamil(run.text);
-                else:
-                    print_run(run)
-                    curr_font = "Bamini"
-                    run.text = convert_bamini(run.text)
-            elif run.font.name == None and run.style.name == "Default Paragraph Font":
-                print_run(run)
-                curr_font = "Bamini"
-                run.text = convert_bamini(run.text)
-            else:
-                print_run(run)
-            prev_font = curr_font
+            convert_runfont(runs[0], paragraph_font)
+            print "</run>"
+            print "</para>"
+            continue
+
+        # Convert multi-run paragraph
+        i = ref = 0
+        #for run in p.runs:
+        for i in range(runs_len):
+            print "\n<run>"
+            print runs[i].text
+            print runs[i].font.name
+
+            # take a copy of i as reference
+            ref = i
+
+            # Cat all run.text as long as they have same font
+            while i+1 < runs_len and runs[i].font.name == runs[i+1].font.name:
+                runs[ref].text += runs[i+1].text
+                runs[i+1].clear() # clear the content of this run
+                i += 1
+
+            # Convert the concatenated run
+            convert_runfont(runs[ref], paragraph_font)
             print "</run>"
         print "</para>"
             
