@@ -1,4 +1,5 @@
 #! /usr/local/bin/python
+# -*- coding: utf-8 -*-
 #
 # The concept behind this code is taken from page
 # http://stackoverflow.com/questions/17850227/text-replace-in-docx-and-save-the-changed-file-with-python-docx
@@ -13,8 +14,12 @@ from BaminiDict import bamini_dict
 from AmudhamDict import amudham_dict
 from AdhawinTamilDict import adhawintamil_dict 
 
+
+# Global variables
 english_fonts = ["Times New Roman"]
 
+
+# Functions....
 def usage():
     print ""
     print "This tool converts word document (.docx) file with Bamini font to"
@@ -124,6 +129,7 @@ def main():
 
         # Convert multi-run paragraph
         i = ref = 0
+        pending_i_vowel = None
         #for run in p.runs:
         for i in range(runs_len):
             print "\n<run>"
@@ -139,8 +145,20 @@ def main():
                 runs[i+1].clear() # clear the content of this run
                 i += 1
 
-            # Convert the concatenated run
-            convert_runfont(runs[ref], paragraph_font)
+            # Correct the ¿ ை(  )error by not coverting immediately
+            if (runs[ref].font.name == "Adhawin-Tamil" or (paragraph_font == "Adhawin-Tamil" and runs[ref].font.name == None)) and runs[ref].text[0].encode("utf-8") == '¿':
+                print "P E N D I N G   V O W E L   'I'   D E T E C T E D"
+                pending_i_vowel = runs[ref].text
+                runs[ref].clear()
+            # if ¿ symbol was captured, then insert it in the 2nd index of the next string
+            elif pending_i_vowel != None:
+                runs[ref].text = runs[ref].text[:1]+pending_i_vowel+runs[ref].text[1:]
+                convert_runfont(runs[ref], paragraph_font)
+                print "P E N D I N G   V O W E L   'I'   C O R R E C T E D"
+                pending_i_vowel = None
+            else:
+                convert_runfont(runs[ref], paragraph_font)
+
             print "</run>"
         print "</para>"
             
