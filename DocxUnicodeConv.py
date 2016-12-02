@@ -70,8 +70,7 @@ def convert_runfont(run, p_font):
     elif r_font in english_fonts:
         print "No conversion for "+str(r_font)
     else:
-        print "UNKOWN FONT"
-        run.text = convert_bamini(run.text)
+        print " * * *   U N K N O W N   F O N T   * * * "
 
 
 def main():
