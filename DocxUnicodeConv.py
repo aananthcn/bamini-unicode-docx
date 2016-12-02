@@ -146,18 +146,15 @@ def main():
                 i += 1
 
             # Correct the ¿ ை(  )error by not coverting immediately
-            #if len(runs[ref].text) > 0 and runs[ref].text[0] == '¿':
-            if runs[ref].font.name == "Adhawin-Tamil":
-                print "P E N D I N G   V O W E L   D E T E C T E D"
-                print runs[ref].text + " == ¿".decode("utf-8")
-                print len(runs[ref].text)
+            if (runs[ref].font.name == "Adhawin-Tamil" or (paragraph_font == "Adhawin-Tamil" and runs[ref].font.name == None)) and runs[ref].text[0].encode("utf-8") == '¿':
+                print "P E N D I N G   V O W E L   'I'   D E T E C T E D"
                 pending_i_vowel = runs[ref].text
                 runs[ref].clear()
-            # if ¿ symbol was captured, then preppend it to the next run and convert
+            # if ¿ symbol was captured, then insert it in the 2nd index of the next string
             elif pending_i_vowel != None:
-                runs[ref].text = pending_i_vowel+runs[ref].text
+                runs[ref].text = runs[ref].text[:1]+pending_i_vowel+runs[ref].text[1:]
                 convert_runfont(runs[ref], paragraph_font)
-                print "P E N D I N G   V O W E L   C O R R E C T E D"
+                print "P E N D I N G   V O W E L   'I'   C O R R E C T E D"
                 pending_i_vowel = None
             else:
                 convert_runfont(runs[ref], paragraph_font)
