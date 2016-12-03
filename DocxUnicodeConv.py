@@ -12,6 +12,7 @@ from docx import Document
 from BaminiDict import bamini_dict
 from AmudhamDict import amudham_dict
 from AdhawinTamilDict import adhawintamil_dict 
+from TamilFancyDict import tamilfancy_dict 
 
 
 # Global variables
@@ -46,6 +47,13 @@ def convert_bamini(wg):
     print "Bamini: "+text
     return text.decode("utf-8")
 
+def convert_tamilfancy(wg):
+    text = wg.encode("utf-8")
+    for key in tamilfancy_dict.keys():
+        text = text.replace(str(key), str(tamilfancy_dict.get(key)))
+    print "Tamil_Fancy: "+text
+    return text.decode("utf-8")
+
 def convert_adhawintamil(wg):
     text = wg.encode("utf-8")
     for key in adhawintamil_dict.keys():
@@ -72,6 +80,8 @@ def convert_runfont(run, p_font):
         run.text = convert_adhawintamil(run.text)
     elif r_font == "Bamini" or (r_font == None and p_font == "Bamini"):
         run.text = convert_bamini(run.text)
+    elif r_font == "Tamil_Fancy" or (r_font == None and p_font == "Tamil_Fancy"):
+        run.text = convert_tamilfancy(run.text)
     elif r_font in english_fonts:
         print "No conversion for "+str(r_font)
     else:
