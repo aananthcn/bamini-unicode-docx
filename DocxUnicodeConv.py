@@ -28,10 +28,12 @@ def usage():
     print "usage: python DocxUnicodeConv.py -i <input file> [ -p <outpath> ]"
     print ""
 
+
 def print_run(run):
     print "font = "+str(run.font.name)
     print "style.font = "+str(run.style.font.name)
     print "text = "+run.text
+
 
 def convert_amudham(wg):
     text = wg.encode("utf-8")
@@ -40,6 +42,7 @@ def convert_amudham(wg):
     print "Amudham: "+text
     return text.decode("utf-8")
 
+
 def convert_bamini(wg):
     text = wg.encode("utf-8")
     for key in bamini_dict.keys():
@@ -47,12 +50,28 @@ def convert_bamini(wg):
     print "Bamini: "+text
     return text.decode("utf-8")
 
+
 def convert_tamilfancy(wg):
     text = wg.encode("utf-8")
+    # dependent vowel here comes with 2 bytes
+    igh = 'à'
+    pos = text.find(igh)
+    if pos != -1:
+        # found! swap characters round the vowel to render it correctly in unicode
+        ltext = list(text)
+        temp = ltext[pos+2]
+        ltext[pos+2] = ltext[pos-1]
+        ltext[pos-1] = temp
+        text = "".join(ltext)
+        print text
+
+    # real conversion
     for key in tamilfancy_dict.keys():
         text = text.replace(str(key), str(tamilfancy_dict.get(key)))
+
     print "Tamil_Fancy: "+text
     return text.decode("utf-8")
+
 
 def convert_adhawintamil(wg):
     text = wg.encode("utf-8")
