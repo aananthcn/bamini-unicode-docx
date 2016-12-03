@@ -7,7 +7,6 @@
 import os
 import sys
 import getopt
-import zipfile
 
 from docx import Document
 from BaminiDict import bamini_dict
@@ -61,6 +60,12 @@ def convert_runfont(run, p_font):
     r_font = run.font.name
     print_run(run)
 
+    # ignore runs with text length 0 or less
+    if len(run.text) <= 0:
+        print " * * *  R U N   L E N G T H   Z E R O  * * *"
+        return
+
+    # main convversion logic
     if r_font == "Amudham" or (r_font == None and p_font == "Amudham"):
         run.text = convert_amudham(run.text)
     elif r_font == "Adhawin-Tamil" or (r_font == None and p_font == "Adhawin-Tamil"):
