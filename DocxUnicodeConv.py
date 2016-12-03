@@ -24,7 +24,7 @@ def usage():
     print "This tool converts word document (.docx) file with Bamini font to"
     print "Unicode font without changing the format of the document"
     print ""
-    print "usage: ./Bamini2UniConv -i <input file>"
+    print "usage: python DocxUnicodeConv.py -i <input file> [ -p <outpath> ]"
     print ""
 
 def print_run(run):
@@ -80,25 +80,30 @@ def convert_runfont(run, p_font):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "i:o:", ["help", "input"])
+        opts, args = getopt.getopt(sys.argv[1:], "i:p:", ["help", "input", "path"])
     except getopt.GetoptError as err:
         # print help information and exit:
         print str(err)  # will print something like "option -a not recognized"
         usage()
         sys.exit(2)
     
-    infile = outfile = None;
+    infile = ""
+    outfile = None
+    outpath = "./"
     for o, a in opts:
         if o in ("-i", "--input"):
             infile = a
-            outfile = infile+".mod.docx"
+        elif o in ("-p", "--path"):
+            outpath = a
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
         else:
+            print "option = "+o
             assert False, "unhandled option"
     
-    if infile == None or outfile == None:
+    outfile = outpath+infile+".mod.docx"
+    if infile == "":
         print ""
         print "Error: Not all expected arguments are passed!!"
         print ""
