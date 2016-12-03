@@ -77,39 +77,8 @@ def convert_runfont(run, p_font):
     else:
         print " * * *   U N K N O W N   F O N T   * * * "
 
-
-def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "i:p:", ["help", "input", "path"])
-    except getopt.GetoptError as err:
-        # print help information and exit:
-        print str(err)  # will print something like "option -a not recognized"
-        usage()
-        sys.exit(2)
-    
-    infile = ""
-    outfile = None
-    outpath = "./"
-    for o, a in opts:
-        if o in ("-i", "--input"):
-            infile = a
-        elif o in ("-p", "--path"):
-            outpath = a
-        elif o in ("-h", "--help"):
-            usage()
-            sys.exit()
-        else:
-            print "option = "+o
-            assert False, "unhandled option"
-    
+def DocxUnicodeConv(infile, outpath):
     outfile = outpath+infile+".mod.docx"
-    if infile == "":
-        print ""
-        print "Error: Not all expected arguments are passed!!"
-        print ""
-        usage()
-        sys.exit(2)
-
     document = Document(infile)
     for p in document.paragraphs:
         # Collect paragraph information
@@ -121,7 +90,7 @@ def main():
         # Collect run information in this paragraph
         runs = [r for r in p.runs]
         runs_len = len(runs)
-        print runs_len
+        print "No of runs: "+ str(runs_len)
 
         # if no runs, skip conversion
         if runs_len == 0:
@@ -144,6 +113,11 @@ def main():
             print "\n<run>"
             print runs[i].text
             print runs[i].font.name
+
+            # ignore all zero lengthed texts
+            if len(runs[i].text) <= 0:
+                print "</run>"
+                continue
 
             # take a copy of i as reference
             ref = i
@@ -171,8 +145,43 @@ def main():
             print "</run>"
         print "</para>"
             
-            
     document.save(infile+"-modified.docx")
+
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "i:p:", ["help", "input", "path"])
+    except getopt.GetoptError as err:
+        # print help information and exit:
+        print str(err)  # will print something like "option -a not recognized"
+        usage()
+        sys.exit(2)
+    
+    infile = ""
+    outfile = None
+    outpath = "./"
+    for o, a in opts:
+        if o in ("-i", "--input"):
+            infile = a
+        elif o in ("-p", "--path"):
+            outpath = a
+        elif o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        else:
+            print "option = "+o
+            assert False, "unhandled option"
+    
+    if infile == "":
+        print ""
+        print "Error: Not all expected arguments are passed!!"
+        print ""
+        usage()
+        sys.exit(2)
+   
+    if os.path.isfile(infile):
+        DocxUnicodeConv(infile, outpath)
+            
 
 
 if __name__ == "__main__": 
