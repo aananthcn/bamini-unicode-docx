@@ -7,8 +7,12 @@
 import os
 import sys
 import getopt
+import xml.etree.ElementTree as ET
 
 from docx import Document
+
+from XmlExtract import extract_xml
+from XmlExtract import create_newdoc
 from BaminiDict import bamini_dict
 from AmudhamDict import amudham_dict
 from AdhawinTamilDict import adhawintamil_dict 
@@ -30,9 +34,9 @@ def usage():
 
 
 def print_run(run):
-    print "font = "+str(run.font.name)
-    print "style.font = "+str(run.style.font.name)
-    print "text = "+run.text
+    print "run font = "+str(run.font.name)
+    print "run style.font = "+str(run.style.font.name)
+    print "run text = "+run.text
 
 
 def convert_amudham(wg):
@@ -81,11 +85,10 @@ def convert_adhawintamil(wg):
     return text.decode("utf-8")
 
 
-# arg1: run object , arg2: paragraph font
+# arg1: run object, arg2: paragraph font
 def convert_runfont(run, p_font):
-
-    r_font = run.font.name
     print_run(run)
+    r_font = run.font.name
 
     # ignore runs with text length 0 or less
     if len(run.text) <= 0:
@@ -105,6 +108,7 @@ def convert_runfont(run, p_font):
         print "No conversion for "+str(r_font)
     else:
         print " * * *   U N K N O W N   F O N T   * * * "
+
 
 def DocxUnicodeConv(infile, outpath):
     outfile = outpath+infile+".mod.docx"
@@ -139,11 +143,9 @@ def DocxUnicodeConv(infile, outpath):
         pending_i_vowel = None
         #for run in p.runs:
         for i in range(runs_len):
-            print "\n<run>"
-            print runs[i].text
-            print runs[i].font.name
+            print "\n<run> "+str(i)
 
-            # ignore all zero lengthed texts
+            # Search text in run: ignore all zero lengthed texts
             if len(runs[i].text) <= 0:
                 print "</run>"
                 continue
@@ -172,9 +174,71 @@ def DocxUnicodeConv(infile, outpath):
                 convert_runfont(runs[ref], paragraph_font)
 
             print "</run>"
+
         print "</para>"
-            
-    document.save(infile+"-modified.docx")
+ 
+
+    # Now search for text in tables
+    for table in document.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    for run in p.runs:
+                        if len(run.text) > 0:
+                            convert_runfont(run, p.style.font.name)
+
+    # Save it before the document is extracted for textbox
+    modified_file = infile+"-modified.docx"
+    document.save(modified_file)
+    
+    # Now search text in textboxes and replace them
+    docxml = extract_xml(modified_file)
+    newxml = ParseAndReplaceTextBoxTexts(docxml)
+    create_newdoc(modified_file, newxml)
+
+    # Clean-up the directory
+    os.remove(modified_file)
+    os.remove(docxml)
+    os.remove(newxml)
+
+
+def ParseAndReplaceTextBoxTexts(filepath):
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+    pending_tbi_vowel = None
+
+    # Parse text boxes and replace
+    for i in range(len(root[0])):
+        for j in range(len(root[0][i])):
+            for k in range(len(root[0][i][j])):
+                for l in range(len(root[0][i][j][k])):
+                    if root[0][i][j][k][l].tag.split('}')[-1] == 'Fallback':
+                        for m in range(len(root[0][i][j][k][l])):
+                            for n in range(len(root[0][i][j][k][l][m])):
+                                for o in range(len(root[0][i][j][k][l][m][n])):
+                                    for p in range(len(root[0][i][j][k][l][m][n][o])):
+                                        if root[0][i][j][k][l][m][n][o][p].tag.split('}')[-1] == 'textbox':
+                                            for q in range(len(root[0][i][j][k][l][m][n][o][p])):
+                                                for r in range(len(root[0][i][j][k][l][m][n][o][p][q])):
+                                                    for s in range(len(root[0][i][j][k][l][m][n][o][p][q][r])):
+                                                        for t in range(len(root[0][i][j][k][l][m][n][o][p][q][r][s])):
+                                                            if root[0][i][j][k][l][m][n][o][p][q][r][s][t].tag.split('}')[-1] == 't':
+                                                                tb_text =  root[0][i][j][k][l][m][n][o][p][q][r][s][t].text
+                                                                if tb_text.encode("utf-8") == '¿':
+                                                                    pending_tbi_vowel = tb_text
+                                                                    root[0][i][j][k][l][m][n][o][p][q][r][s][t].text = ""
+                                                                elif pending_tbi_vowel != None:
+                                                                    tb_text = tb_text[:1]+pending_tbi_vowel+tb_text[1:]
+                                                                    root[0][i][j][k][l][m][n][o][p][q][r][s][t].text = convert_bamini(tb_text)
+                                                                    pending_tbi_vowel = None
+                                                                else:
+                                                                    root[0][i][j][k][l][m][n][o][p][q][r][s][t].text = convert_bamini(tb_text)
+
+    # Write the modified xml file
+    modxml = filepath+"-modified.xml"
+    tree.write(modxml)
+    return modxml
+
 
 
 def main():

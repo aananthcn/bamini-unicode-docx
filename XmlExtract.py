@@ -18,17 +18,32 @@ def usage():
     print ""
 
 
+def create_newdoc(old_docfile, xmlfile):
+    doc = zipfile.ZipFile(old_docfile)
+    new = zipfile.ZipFile(old_docfile+"-tb.doc", "w")
+
+    for file in doc.filelist:
+        if not file.filename == "word/document.xml":
+            new.writestr(file.filename, doc.read(file))
+
+    new.write(xmlfile, "word/document.xml")
+    new.close()
+    doc.close()
+
+
 def extract_xml(infile):
     doc = zipfile.ZipFile(infile)
 
     with open(doc.extract("word/document.xml", "/tmp/")) as tempfile:
         tempstr = tempfile.read()
 
-    with open(infile+".xml", "w+") as tempfile:
+    outfile = infile+".xml"
+    with open(outfile, "w+") as tempfile:
         tempfile.write(tempstr)
 
     doc.close()
     tempfile.close()
+    return outfile
 
 
 
