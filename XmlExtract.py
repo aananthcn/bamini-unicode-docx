@@ -20,7 +20,7 @@ def usage():
 
 def create_newdoc(old_docfile, xmlfile):
     doc = zipfile.ZipFile(old_docfile)
-    new = zipfile.ZipFile(old_docfile+"-tb.doc", "w")
+    new = zipfile.ZipFile(old_docfile+"-tb.docx", "w")
 
     for file in doc.filelist:
         if not file.filename == "word/document.xml":
