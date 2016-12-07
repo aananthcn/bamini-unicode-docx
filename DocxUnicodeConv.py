@@ -202,9 +202,31 @@ def DocxUnicodeConv(infile, outpath):
     os.remove(newxml)
 
 
+
+pending_tbi_vowel = None
+
+
+def ReplaceTextInXml(tb_obj):
+    global pending_tbi_vowel
+    tb_text =  tb_obj.text
+    print tb_text
+
+    if tb_text.encode("utf-8") == '¿':
+        pending_tbi_vowel = tb_text
+        tb_obj.text = ""
+    elif pending_tbi_vowel != None:
+        tb_text = tb_text[:1]+pending_tbi_vowel+tb_text[1:]
+        tb_obj.text = convert_bamini(tb_text)
+        pending_tbi_vowel = None
+    else:
+        tb_obj.text = convert_bamini(tb_text)
+
+
 def ParseAndReplaceTextBoxTexts(filepath):
     tree = ET.parse(filepath)
     root = tree.getroot()
+    
+    global pending_tbi_vowel
     pending_tbi_vowel = None
 
     # Parse text boxes and replace
@@ -212,27 +234,36 @@ def ParseAndReplaceTextBoxTexts(filepath):
         for j in range(len(root[0][i])):
             for k in range(len(root[0][i][j])):
                 for l in range(len(root[0][i][j][k])):
-                    if root[0][i][j][k][l].tag.split('}')[-1] == 'Fallback':
-                        for m in range(len(root[0][i][j][k][l])):
-                            for n in range(len(root[0][i][j][k][l][m])):
-                                for o in range(len(root[0][i][j][k][l][m][n])):
-                                    for p in range(len(root[0][i][j][k][l][m][n][o])):
-                                        if root[0][i][j][k][l][m][n][o][p].tag.split('}')[-1] == 'textbox':
-                                            for q in range(len(root[0][i][j][k][l][m][n][o][p])):
-                                                for r in range(len(root[0][i][j][k][l][m][n][o][p][q])):
-                                                    for s in range(len(root[0][i][j][k][l][m][n][o][p][q][r])):
-                                                        for t in range(len(root[0][i][j][k][l][m][n][o][p][q][r][s])):
-                                                            if root[0][i][j][k][l][m][n][o][p][q][r][s][t].tag.split('}')[-1] == 't':
-                                                                tb_text =  root[0][i][j][k][l][m][n][o][p][q][r][s][t].text
-                                                                if tb_text.encode("utf-8") == '¿':
-                                                                    pending_tbi_vowel = tb_text
-                                                                    root[0][i][j][k][l][m][n][o][p][q][r][s][t].text = ""
-                                                                elif pending_tbi_vowel != None:
-                                                                    tb_text = tb_text[:1]+pending_tbi_vowel+tb_text[1:]
-                                                                    root[0][i][j][k][l][m][n][o][p][q][r][s][t].text = convert_bamini(tb_text)
-                                                                    pending_tbi_vowel = None
-                                                                else:
-                                                                    root[0][i][j][k][l][m][n][o][p][q][r][s][t].text = convert_bamini(tb_text)
+                    if root[0][i][j][k][l].tag.split('}')[-1] == 't':
+                        ReplaceTextInXml(root[0][i][j][k][l])
+                    for m in range(len(root[0][i][j][k][l])):
+                        if root[0][i][j][k][l][m].tag.split('}')[-1] == 't':
+                            ReplaceTextInXml(root[0][i][j][k][l][m])
+                        for n in range(len(root[0][i][j][k][l][m])):
+                            if root[0][i][j][k][l][m][n].tag.split('}')[-1] == 't':
+                                ReplaceTextInXml(root[0][i][j][k][l][m][n])
+                            for o in range(len(root[0][i][j][k][l][m][n])):
+                                if root[0][i][j][k][l][m][n][o].tag.split('}')[-1] == 't':
+                                    ReplaceTextInXml(root[0][i][j][k][l][m][n][o])
+                                for p in range(len(root[0][i][j][k][l][m][n][o])):
+                                    if root[0][i][j][k][l][m][n][o][p].tag.split('}')[-1] == 't':
+                                        ReplaceTextInXml(root[0][i][j][k][l][m][n][o][p])
+                                    for q in range(len(root[0][i][j][k][l][m][n][o][p])):
+                                        if root[0][i][j][k][l][m][n][o][p][q].tag.split('}')[-1] == 't':
+                                            ReplaceTextInXml(root[0][i][j][k][l][m][n][o][p][q])
+                                        for r in range(len(root[0][i][j][k][l][m][n][o][p][q])):
+                                            if root[0][i][j][k][l][m][n][o][p][q][r].tag.split('}')[-1] == 't':
+                                                ReplaceTextInXml(root[0][i][j][k][l][m][n][o][p][q][r])
+                                            for s in range(len(root[0][i][j][k][l][m][n][o][p][q][r])):
+                                                if root[0][i][j][k][l][m][n][o][p][q][r][s].tag.split('}')[-1] == 't':
+                                                    ReplaceTextInXml(root[0][i][j][k][l][m][n][o][p][q][r][s])
+                                                for t in range(len(root[0][i][j][k][l][m][n][o][p][q][r][s])):
+                                                    if root[0][i][j][k][l][m][n][o][p][q][r][s][t].tag.split('}')[-1] == 't':
+                                                        ReplaceTextInXml(root[0][i][j][k][l][m][n][o][p][q][r][s][t])
+                                                    for u in range(len(root[0][i][j][k][l][m][n][o][p][q][r][s][t])):
+                                                        if root[0][i][j][k][l][m][n][o][p][q][r][s][t][u].tag.split('}')[-1] == 't':
+                                                            ReplaceTextInXml(root[0][i][j][k][l][m][n][o][p][q][r][s][t][u])
+
 
     # Write the modified xml file
     modxml = filepath+"-modified.xml"
