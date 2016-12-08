@@ -102,6 +102,10 @@ def convert_runfont(run, p_font):
         run.text = convert_adhawintamil(run.text)
     elif r_font == "Bamini" or (r_font == None and p_font == "Bamini"):
         run.text = convert_bamini(run.text)
+    elif r_font == "Ranjani" or (r_font == None and p_font == "Ranjani"):
+        run.text = convert_bamini(run.text)
+    elif r_font == "Aabohi" or (r_font == None and p_font == "Aabohi"):
+        run.text = convert_bamini(run.text)
     elif r_font == "Tamil_Fancy" or (r_font == None and p_font == "Tamil_Fancy"):
         run.text = convert_tamilfancy(run.text)
     elif r_font in english_fonts:
